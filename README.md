@@ -92,6 +92,8 @@ The optional `options` argument may contain:
 
 * `cacheSize` *(number, default: `8 * 1024 * 1024` = 8MB)*: The size (in bytes) of the in-memory [LRU](http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used) cache with frequently used uncompressed block contents.
 
+* `paranoidChecks` *(boolean, default: `false`)*: LevelDB can optionally store checksums with your records and will verify them when reading. If `true`, an error will be thrown if LevelDB detects corruption (your data can hopefully be salvaged with `leveldown.repair()`).
+
 **Advanced options**
 
 The following options are for advanced performance tuning. Modify them only if you can prove actual benefit for your particular application.
@@ -105,6 +107,8 @@ The following options are for advanced performance tuning. Modify them only if y
 * `maxOpenFiles` *(number, default: `1000`)*: The maximum number of files that LevelDB is allowed to have open at a time. If your data store is likely to have a large working set, you may increase this value to prevent file descriptor churn. To calculate the number of files required for your working set, divide your total data by `'maxFileSize'`.
 
 * `blockRestartInterval` *(number, default: `16`)*: The number of entries before restarting the "delta encoding" of keys within blocks. Each "restart" point stores the full key for the entry, between restarts, the common prefix of the keys for those entries is omitted. Restarts are similar to the concept of keyframes in video encoding and are used to minimise the amount of space required to store keys. This is particularly helpful when using deep namespacing / prefixing in your keys.
+
+* `filterBits` *(number, default: `10`)*: The number of bits per key to be used for leveldb's [bloom filter](https://en.wikipedia.org/wiki/Bloom_filter) policy. LevelDB can use a bloom filter to avoid looking up keys that do not exist. Bloom filters have a tendency to give false positives as data is added. This option allows you to tweak the potential false positive rate on the bloom filter in order to further reduce disk reads for non-existent data. The use of a bloom filter is generally recommended, however, it comes at the cost of storage and memory usage. No bloom filter will be allocated if zero (only do this if you expect to have very few read misses and you absolutely need the extra memory/diskspace).
 
 * `maxFileSize` *(number, default: `2* 1024 * 1024` = 2MB)*: The maximum amount of bytes to write to a file before switching to a new one. From the LevelDB documentation:
 

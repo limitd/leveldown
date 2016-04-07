@@ -200,9 +200,17 @@ NAN_METHOD(Database::Open) {
     , 16
   );
   uint32_t maxFileSize = UInt32OptionValue(optionsObj, "maxFileSize", 2 << 20);
+  uint32_t filterBits = UInt32OptionValue(optionsObj, "filterBits", 10);
+  bool paranoidChecks = BooleanOptionValue(optionsObj, "paranoidChecks", false);
 
-  database->blockCache = leveldb::NewLRUCache(cacheSize);
-  database->filterPolicy = leveldb::NewBloomFilterPolicy(10);
+  database->blockCache = cacheSize != 0
+    ? leveldb::NewLRUCache(cacheSize)
+    : NULL;
+
+  database->filterPolicy = filterBits != 0
+    ? leveldb::NewBloomFilterPolicy(filterBits)
+    : NULL;
+
 
   OpenWorker* worker = new OpenWorker(
       database
@@ -217,6 +225,7 @@ NAN_METHOD(Database::Open) {
     , maxOpenFiles
     , blockRestartInterval
     , maxFileSize
+    , paranoidChecks
   );
   // persist to prevent accidental GC
   v8::Local<v8::Object> _this = info.This();
