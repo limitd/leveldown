@@ -8,6 +8,7 @@
 
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
+#include <helpers/memenv/memenv.h>
 
 #include "leveldown.h"
 #include "database.h"
@@ -119,6 +120,10 @@ void Database::ReleaseIterator (uint32_t id) {
 void Database::CloseDatabase () {
   delete db;
   db = NULL;
+  if (env) {
+    delete env;
+    env = NULL;
+  }
   if (blockCache) {
     delete blockCache;
     blockCache = NULL;
@@ -202,6 +207,11 @@ NAN_METHOD(Database::Open) {
   uint32_t maxFileSize = UInt32OptionValue(optionsObj, "maxFileSize", 2 << 20);
   uint32_t filterBits = UInt32OptionValue(optionsObj, "filterBits", 10);
   bool paranoidChecks = BooleanOptionValue(optionsObj, "paranoidChecks", false);
+  bool memenv = BooleanOptionValue(optionsObj, "memory", false);
+
+  database->env = memenv
+    ? leveldb::NewMemEnv(leveldb::Env::Default())
+    : NULL;
 
   database->blockCache = cacheSize != 0
     ? leveldb::NewLRUCache(cacheSize)
@@ -215,6 +225,7 @@ NAN_METHOD(Database::Open) {
   OpenWorker* worker = new OpenWorker(
       database
     , new Nan::Callback(callback)
+    , database->env
     , database->blockCache
     , database->filterPolicy
     , createIfMissing

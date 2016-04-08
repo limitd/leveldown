@@ -10,6 +10,7 @@
 #include <node.h>
 
 #include <leveldb/cache.h>
+#include <leveldb/env.h>
 
 #include "async.h"
 
@@ -19,6 +20,7 @@ class OpenWorker : public AsyncWorker {
 public:
   OpenWorker(Database *database,
              Nan::Callback *callback,
+             leveldb::Env* env,
              leveldb::Cache* blockCache,
              const leveldb::FilterPolicy* filterPolicy,
              bool createIfMissing,
