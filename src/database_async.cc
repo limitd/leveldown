@@ -31,11 +31,11 @@ OpenWorker::OpenWorker(Database *database,
                        uint32_t maxOpenFiles,
                        uint32_t blockRestartInterval,
                        uint32_t maxFileSize,
-					   bool paranoidChecks)
+                       bool paranoidChecks)
 : AsyncWorker(database, callback, "leveldown:db.open")
 {
   options = new leveldb::Options();
-  if (env)
+  if (env != NULL)
     options->env                  = env;
   options->block_cache            = blockCache;
   options->filter_policy          = filterPolicy;

@@ -31,7 +31,7 @@ public:
              uint32_t maxOpenFiles,
              uint32_t blockRestartInterval,
              uint32_t maxFileSize,
-			 bool paranoidChecks);
+             bool paranoidChecks);
 
   virtual ~OpenWorker();
   virtual void Execute();
