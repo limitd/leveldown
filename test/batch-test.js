@@ -1,5 +1,5 @@
 const test       = require('tape')
     , leveldown  = require('..')
-    , abstract   = require('abstract-leveldown/abstract/batch-test')
+    , abstract   = require('abstract-leveldown/test/batch-test')
 
 abstract.all(leveldown, test)

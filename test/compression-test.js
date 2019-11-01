@@ -6,7 +6,7 @@
 var async      = require('async')
   , du         = require('du')
   , delayed    = require('delayed')
-  , common     = require('abstract-leveldown/testCommon')
+  , common     = require('./abstract-leveldown-testCommon')
   , leveldown  = require('..')
   , test       = require('tape')
 

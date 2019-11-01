@@ -13,10 +13,10 @@
 static inline size_t StringOrBufferLength(v8::Local<v8::Value> obj) {
   Nan::HandleScope scope;
 
-  return (!obj->ToObject().IsEmpty()
-    && node::Buffer::HasInstance(obj->ToObject()))
-    ? node::Buffer::Length(obj->ToObject())
-    : obj->ToString()->Utf8Length();
+  return (!obj->ToObject(Nan::GetCurrentContext()).IsEmpty()
+    && node::Buffer::HasInstance(obj))
+    ? node::Buffer::Length(obj)
+    : obj->ToString(Nan::GetCurrentContext()).ToLocalChecked()->Utf8Length(v8::Isolate::GetCurrent());
 }
 
 // NOTE: this MUST be called on objects created by
@@ -27,7 +27,7 @@ static inline void DisposeStringOrBufferFromSlice(
   Nan::HandleScope scope;
 
   if (!slice.empty()) {
-    v8::Local<v8::Value> obj = Nan::New<v8::Object>(handle)->Get(Nan::New<v8::String>("obj").ToLocalChecked());
+    v8::Local<v8::Value> obj = Nan::Get(Nan::New<v8::Object>(handle), Nan::New<v8::String>("obj").ToLocalChecked()).ToLocalChecked();
     if (!node::Buffer::HasInstance(obj))
       delete[] slice.data();
   }
@@ -44,45 +44,47 @@ static inline void DisposeStringOrBufferFromSlice(
 }
 
 // NOTE: must call DisposeStringOrBufferFromSlice() on objects created here
-#define LD_STRING_OR_BUFFER_TO_SLICE(to, from, name)                           \
-  size_t to ## Sz_;                                                            \
-  char* to ## Ch_;                                                             \
-  if (from->IsNull() || from->IsUndefined()) {                                 \
-    to ## Sz_ = 0;                                                             \
-    to ## Ch_ = 0;                                                             \
-  } else if (!from->ToObject().IsEmpty()                                       \
-      && node::Buffer::HasInstance(from->ToObject())) {                        \
-    to ## Sz_ = node::Buffer::Length(from->ToObject());                        \
-    to ## Ch_ = node::Buffer::Data(from->ToObject());                          \
-  } else {                                                                     \
-    v8::Local<v8::String> to ## Str = from->ToString();                        \
-    to ## Sz_ = to ## Str->Utf8Length();                                       \
-    to ## Ch_ = new char[to ## Sz_];                                           \
-    to ## Str->WriteUtf8(                                                      \
-        to ## Ch_                                                              \
-      , -1                                                                     \
-      , NULL, v8::String::NO_NULL_TERMINATION                                  \
-    );                                                                         \
-  }                                                                            \
+#define LD_STRING_OR_BUFFER_TO_SLICE(to, from, name)                                                   \
+  size_t to ## Sz_;                                                                                    \
+  char* to ## Ch_;                                                                                     \
+  if (from->IsNull() || from->IsUndefined()) {                                                         \
+    to ## Sz_ = 0;                                                                                     \
+    to ## Ch_ = 0;                                                                                     \
+  } else if (!from->ToObject(Nan::GetCurrentContext()).IsEmpty()                                       \
+      && node::Buffer::HasInstance(from->ToObject(Nan::GetCurrentContext()).ToLocalChecked())) {       \
+    to ## Sz_ = node::Buffer::Length(from->ToObject(Nan::GetCurrentContext()).ToLocalChecked());       \
+    to ## Ch_ = node::Buffer::Data(from->ToObject(Nan::GetCurrentContext()).ToLocalChecked());         \
+  } else {                                                                                             \
+    v8::Local<v8::String> to ## Str = from->ToString(Nan::GetCurrentContext()).ToLocalChecked();       \
+    to ## Sz_ = to ## Str->Utf8Length(v8::Isolate::GetCurrent());                                      \
+    to ## Ch_ = new char[to ## Sz_];                                                                   \
+    to ## Str->WriteUtf8(                                                                              \
+        v8::Isolate::GetCurrent()                                                                      \
+      , to ## Ch_                                                                                      \
+      , -1                                                                                             \
+      , NULL, v8::String::NO_NULL_TERMINATION                                                          \
+    );                                                                                                 \
+  }                                                                                                    \
   leveldb::Slice to(to ## Ch_, to ## Sz_);
 
-#define LD_STRING_OR_BUFFER_TO_COPY(to, from, name)                            \
-  size_t to ## Sz_;                                                            \
-  char* to ## Ch_;                                                             \
-  if (!from->ToObject().IsEmpty()                                              \
-      && node::Buffer::HasInstance(from->ToObject())) {                        \
-    to ## Sz_ = node::Buffer::Length(from->ToObject());                        \
-    to ## Ch_ = new char[to ## Sz_];                                           \
-    memcpy(to ## Ch_, node::Buffer::Data(from->ToObject()), to ## Sz_);        \
-  } else {                                                                     \
-    v8::Local<v8::String> to ## Str = from->ToString();                        \
-    to ## Sz_ = to ## Str->Utf8Length();                                       \
-    to ## Ch_ = new char[to ## Sz_];                                           \
-    to ## Str->WriteUtf8(                                                      \
-        to ## Ch_                                                              \
-      , -1                                                                     \
-      , NULL, v8::String::NO_NULL_TERMINATION                                  \
-    );                                                                         \
+#define LD_STRING_OR_BUFFER_TO_COPY(to, from, name)                                                                \
+  size_t to ## Sz_;                                                                                                \
+  char* to ## Ch_;                                                                                                 \
+  if (!from->ToObject(Nan::GetCurrentContext()).IsEmpty()                                                          \
+      && node::Buffer::HasInstance(from->ToObject(Nan::GetCurrentContext()).ToLocalChecked())) {                   \
+    to ## Sz_ = node::Buffer::Length(from->ToObject(Nan::GetCurrentContext()).ToLocalChecked());                   \
+    to ## Ch_ = new char[to ## Sz_];                                                                               \
+    memcpy(to ## Ch_, node::Buffer::Data(from->ToObject(Nan::GetCurrentContext()).ToLocalChecked()), to ## Sz_);   \
+  } else {                                                                                                         \
+    v8::Local<v8::String> to ## Str = from->ToString(Nan::GetCurrentContext()).ToLocalChecked();                   \
+    to ## Sz_ = to ## Str->Utf8Length(v8::Isolate::GetCurrent());                                                  \
+    to ## Ch_ = new char[to ## Sz_];                                                                               \
+    to ## Str->WriteUtf8(                                                                                          \
+      v8::Isolate::GetCurrent()                                                                                    \
+      , to ## Ch_                                                                                                  \
+      , -1                                                                                                         \
+      , NULL, v8::String::NO_NULL_TERMINATION                                                                      \
+    );                                                                                                             \
   }
 
 #define LD_RUN_CALLBACK(resource, callback, argc, argv)                 \

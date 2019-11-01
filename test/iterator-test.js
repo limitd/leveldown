@@ -1,6 +1,6 @@
 const test       = require('tape')
     , leveldown  = require('..')
-    , abstract   = require('abstract-leveldown/abstract/iterator-test')
+    , abstract   = require('abstract-leveldown/test/iterator-test')
     , make       = require('./make')
     , iota       = require('iota-array')
     , lexi       = require('lexicographic-integer')

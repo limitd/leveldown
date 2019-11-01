@@ -1,7 +1,7 @@
 const test          = require('tape')
-    , testCommon    = require('abstract-leveldown/testCommon')
+    , testCommon    = require('./abstract-leveldown-testCommon')
     , leveldown     = require('..')
-    , child_process = require('child_process') 
+    , child_process = require('child_process')
 
 var db
   , sourceData = (function () {
@@ -29,7 +29,7 @@ test('try to create an iterator with a blown stack', function (t) {
     , child = child_process.fork(__dirname + '/stack-blower.js', [ 'run' ], opts)
 
   t.plan(2)
-  
+
   child.on('message', function (m) {
     t.ok(true, m)
     child.disconnect()
