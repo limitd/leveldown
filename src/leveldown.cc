@@ -55,19 +55,19 @@ void Init (v8::Local<v8::Object> target) {
   leveldown::Batch::Init();
 
   v8::Local<v8::Function> leveldown =
-      Nan::New<v8::FunctionTemplate>(LevelDOWN)->GetFunction();
+      Nan::New<v8::FunctionTemplate>(LevelDOWN)->GetFunction(Nan::GetCurrentContext()).ToLocalChecked();
 
-  leveldown->Set(
-      Nan::New("destroy").ToLocalChecked()
-    , Nan::New<v8::FunctionTemplate>(DestroyDB)->GetFunction()
+  Nan::Set(leveldown
+    , Nan::New("destroy").ToLocalChecked()
+    , Nan::New<v8::FunctionTemplate>(DestroyDB)->GetFunction(Nan::GetCurrentContext()).ToLocalChecked()
   );
 
-  leveldown->Set(
-      Nan::New("repair").ToLocalChecked()
-    , Nan::New<v8::FunctionTemplate>(RepairDB)->GetFunction()
+  Nan::Set(leveldown
+    , Nan::New("repair").ToLocalChecked()
+    , Nan::New<v8::FunctionTemplate>(RepairDB)->GetFunction(Nan::GetCurrentContext()).ToLocalChecked()
   );
 
-  target->Set(Nan::New("leveldown").ToLocalChecked(), leveldown);
+  Nan::Set(target, Nan::New("leveldown").ToLocalChecked(), leveldown);
 }
 
 NODE_MODULE(leveldown, Init)

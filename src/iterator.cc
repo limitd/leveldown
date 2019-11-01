@@ -409,10 +409,10 @@ v8::Local<v8::Object> Iterator::NewInstance (
 
   if (optionsObj.IsEmpty()) {
     v8::Local<v8::Value> argv[2] = { database, id };
-    maybeInstance = Nan::NewInstance(constructorHandle->GetFunction(), 2, argv);
+    maybeInstance = Nan::NewInstance(constructorHandle->GetFunction(Nan::GetCurrentContext()).ToLocalChecked(), 2, argv);
   } else {
     v8::Local<v8::Value> argv[3] = { database, id, optionsObj };
-    maybeInstance = Nan::NewInstance(constructorHandle->GetFunction(), 3, argv);
+    maybeInstance = Nan::NewInstance(constructorHandle->GetFunction(Nan::GetCurrentContext()).ToLocalChecked(), 3, argv);
   }
 
   if (maybeInstance.IsEmpty())
@@ -423,7 +423,7 @@ v8::Local<v8::Object> Iterator::NewInstance (
 }
 
 NAN_METHOD(Iterator::New) {
-  Database* database = Nan::ObjectWrap::Unwrap<Database>(info[0]->ToObject());
+  Database* database = Nan::ObjectWrap::Unwrap<Database>(info[0]->ToObject(Nan::GetCurrentContext()).ToLocalChecked());
 
   leveldb::Slice* start = NULL;
   std::string* end = NULL;
@@ -454,11 +454,11 @@ NAN_METHOD(Iterator::New) {
 
     reverse = BooleanOptionValue(optionsObj, "reverse");
 
-    if (optionsObj->Has(Nan::New("start").ToLocalChecked())
-        && (node::Buffer::HasInstance(optionsObj->Get(Nan::New("start").ToLocalChecked()))
-          || optionsObj->Get(Nan::New("start").ToLocalChecked())->IsString())) {
+    if (optionsObj->Has(Nan::GetCurrentContext(), Nan::New("start").ToLocalChecked()).ToChecked()
+        && (node::Buffer::HasInstance(Nan::Get(optionsObj, Nan::New("start").ToLocalChecked()).ToLocalChecked())
+          || Nan::Get(optionsObj, Nan::New("start").ToLocalChecked()).ToLocalChecked()->IsString())) {
 
-      v8::Local<v8::Value> startBuffer = optionsObj->Get(Nan::New("start").ToLocalChecked());
+      v8::Local<v8::Value> startBuffer = Nan::Get(optionsObj, Nan::New("start").ToLocalChecked()).ToLocalChecked();
 
       // ignore start if it has size 0 since a Slice can't have length 0
       if (StringOrBufferLength(startBuffer) > 0) {
@@ -468,11 +468,11 @@ NAN_METHOD(Iterator::New) {
       }
     }
 
-    if (optionsObj->Has(Nan::New("end").ToLocalChecked())
-        && (node::Buffer::HasInstance(optionsObj->Get(Nan::New("end").ToLocalChecked()))
-          || optionsObj->Get(Nan::New("end").ToLocalChecked())->IsString())) {
+    if (optionsObj->Has(Nan::GetCurrentContext(), Nan::New("end").ToLocalChecked()).ToChecked()
+        && (node::Buffer::HasInstance(Nan::Get(optionsObj, Nan::New("end").ToLocalChecked()).ToLocalChecked())
+          || Nan::Get(optionsObj, Nan::New("end").ToLocalChecked()).ToLocalChecked()->IsString())) {
 
-      v8::Local<v8::Value> endBuffer = optionsObj->Get(Nan::New("end").ToLocalChecked());
+      v8::Local<v8::Value> endBuffer = Nan::Get(optionsObj, Nan::New("end").ToLocalChecked()).ToLocalChecked();
 
       // ignore end if it has size 0 since a Slice can't have length 0
       if (StringOrBufferLength(endBuffer) > 0) {
@@ -482,21 +482,19 @@ NAN_METHOD(Iterator::New) {
       }
     }
 
-    if (!optionsObj.IsEmpty() && optionsObj->Has(Nan::New("limit").ToLocalChecked())) {
-      limit = v8::Local<v8::Integer>::Cast(optionsObj->Get(
-          Nan::New("limit").ToLocalChecked()))->Value();
+    if (!optionsObj.IsEmpty() && optionsObj->Has(Nan::GetCurrentContext(), Nan::New("limit").ToLocalChecked()).ToChecked()) {
+      limit = v8::Local<v8::Integer>::Cast(Nan::Get(optionsObj, Nan::New("limit").ToLocalChecked()).ToLocalChecked())->Value();
     }
 
-    if (optionsObj->Has(Nan::New("highWaterMark").ToLocalChecked())) {
-      highWaterMark = v8::Local<v8::Integer>::Cast(optionsObj->Get(
-            Nan::New("highWaterMark").ToLocalChecked()))->Value();
+    if (optionsObj->Has(Nan::GetCurrentContext(), Nan::New("highWaterMark").ToLocalChecked()).ToChecked()) {
+      highWaterMark = v8::Local<v8::Integer>::Cast(Nan::Get(optionsObj, Nan::New("highWaterMark").ToLocalChecked()).ToLocalChecked())->Value();
     }
 
-    if (optionsObj->Has(Nan::New("lt").ToLocalChecked())
-        && (node::Buffer::HasInstance(optionsObj->Get(Nan::New("lt").ToLocalChecked()))
-          || optionsObj->Get(Nan::New("lt").ToLocalChecked())->IsString())) {
+    if (optionsObj->Has(Nan::GetCurrentContext(), Nan::New("lt").ToLocalChecked()).ToChecked()
+        && (node::Buffer::HasInstance(Nan::Get(optionsObj, Nan::New("lt").ToLocalChecked()).ToLocalChecked())
+          || Nan::Get(optionsObj, Nan::New("lt").ToLocalChecked()).ToLocalChecked()->IsString())) {
 
-      v8::Local<v8::Value> ltBuffer = optionsObj->Get(Nan::New("lt").ToLocalChecked());
+      v8::Local<v8::Value> ltBuffer = Nan::Get(optionsObj, Nan::New("lt").ToLocalChecked()).ToLocalChecked();
 
       // ignore end if it has size 0 since a Slice can't have length 0
       if (StringOrBufferLength(ltBuffer) > 0) {
@@ -515,11 +513,11 @@ NAN_METHOD(Iterator::New) {
       }
     }
 
-    if (optionsObj->Has(Nan::New("lte").ToLocalChecked())
-        && (node::Buffer::HasInstance(optionsObj->Get(Nan::New("lte").ToLocalChecked()))
-          || optionsObj->Get(Nan::New("lte").ToLocalChecked())->IsString())) {
+    if (optionsObj->Has(Nan::GetCurrentContext(), Nan::New("lte").ToLocalChecked()).ToChecked()
+        && (node::Buffer::HasInstance(Nan::Get(optionsObj, Nan::New("lte").ToLocalChecked()).ToLocalChecked())
+          || Nan::Get(optionsObj, Nan::New("lte").ToLocalChecked()).ToLocalChecked()->IsString())) {
 
-      v8::Local<v8::Value> lteBuffer = optionsObj->Get(Nan::New("lte").ToLocalChecked());
+      v8::Local<v8::Value> lteBuffer = Nan::Get(optionsObj, Nan::New("lte").ToLocalChecked()).ToLocalChecked();
 
       // ignore end if it has size 0 since a Slice can't have length 0
       if (StringOrBufferLength(lteBuffer) > 0) {
@@ -538,11 +536,11 @@ NAN_METHOD(Iterator::New) {
       }
     }
 
-    if (optionsObj->Has(Nan::New("gt").ToLocalChecked())
-        && (node::Buffer::HasInstance(optionsObj->Get(Nan::New("gt").ToLocalChecked()))
-          || optionsObj->Get(Nan::New("gt").ToLocalChecked())->IsString())) {
+    if (optionsObj->Has(Nan::GetCurrentContext(), Nan::New("gt").ToLocalChecked()).ToChecked()
+        && (node::Buffer::HasInstance(Nan::Get(optionsObj, Nan::New("gt").ToLocalChecked()).ToLocalChecked())
+          || Nan::Get(optionsObj, Nan::New("gt").ToLocalChecked()).ToLocalChecked()->IsString())) {
 
-      v8::Local<v8::Value> gtBuffer = optionsObj->Get(Nan::New("gt").ToLocalChecked());
+      v8::Local<v8::Value> gtBuffer = Nan::Get(optionsObj, Nan::New("gt").ToLocalChecked()).ToLocalChecked();
 
       // ignore end if it has size 0 since a Slice can't have length 0
       if (StringOrBufferLength(gtBuffer) > 0) {
@@ -561,11 +559,11 @@ NAN_METHOD(Iterator::New) {
       }
     }
 
-    if (optionsObj->Has(Nan::New("gte").ToLocalChecked())
-        && (node::Buffer::HasInstance(optionsObj->Get(Nan::New("gte").ToLocalChecked()))
-          || optionsObj->Get(Nan::New("gte").ToLocalChecked())->IsString())) {
+    if (optionsObj->Has(Nan::GetCurrentContext(), Nan::New("gte").ToLocalChecked()).ToChecked()
+        && (node::Buffer::HasInstance(Nan::Get(optionsObj, Nan::New("gte").ToLocalChecked()).ToLocalChecked())
+          || Nan::Get(optionsObj, Nan::New("gte").ToLocalChecked()).ToLocalChecked()->IsString())) {
 
-      v8::Local<v8::Value> gteBuffer = optionsObj->Get(Nan::New("gte").ToLocalChecked());
+      v8::Local<v8::Value> gteBuffer = Nan::Get(optionsObj, Nan::New("gte").ToLocalChecked()).ToLocalChecked();
 
       // ignore end if it has size 0 since a Slice can't have length 0
       if (StringOrBufferLength(gteBuffer) > 0) {
@@ -594,7 +592,7 @@ NAN_METHOD(Iterator::New) {
 
   Iterator* iterator = new Iterator(
       database
-    , (uint32_t)id->Int32Value()
+    , (uint32_t)id->Int32Value(Nan::GetCurrentContext()).FromJust()
     , start
     , end
     , reverse

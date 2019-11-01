@@ -10,8 +10,8 @@ const util              = require('util')
 function LevelDOWN (location) {
   if (!(this instanceof LevelDOWN))
     return new LevelDOWN(location)
-
-  AbstractLevelDOWN.call(this, location)
+  this.location = location
+  AbstractLevelDOWN.call(this)
   this.binding = binding(location)
 }
 

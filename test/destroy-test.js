@@ -1,5 +1,5 @@
 const test         = require('tape')
-    , testCommon   = require('abstract-leveldown/testCommon')
+    , testCommon   = require('./abstract-leveldown-testCommon')
     , fs           = require('fs')
     , path         = require('path')
     , mkfiletree   = require('mkfiletree')
